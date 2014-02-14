@@ -211,7 +211,7 @@ import java_cup.runtime.Symbol;
 
 %%
 
-//Special Characters						    
+
 <YYINITIAL>\[			{return new Symbol(TokenIds.LSQBRACE,
 							new Token("[", yyline)); }
 <YYINITIAL>\]			{return new Symbol(TokenIds.RSQBRACE,
@@ -250,9 +250,9 @@ import java_cup.runtime.Symbol;
 							new Token(">=", yyline)); }					
 <YYINITIAL><=			{return new Symbol(TokenIds.LEG,
 							new Token("<=", yyline)); }					
-<YYINITIAL>++			{return new Symbol(TokenIds.INCR,
+<YYINITIAL>"++"			{return new Symbol(TokenIds.INCR,
 							new Token("++", yyline)); }
-<YYINITIAL>--			{return new Symbol(TokenIds.DECR,
+<YYINITIAL>"--"			{return new Symbol(TokenIds.DECR,
 							new Token("--", yyline)); }			
 <YYINITIAL>\.			{return new Symbol(TokenIds.DOT,
 							new Token(".", yyline)); }
@@ -263,7 +263,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>!			{return new Symbol(TokenIds.NOT,
 							new Token("!", yyline)); }
 							
-//keywords												
+
 <YYINITIAL>class        {return new Symbol(TokenIds.CLASS, 
 						    new Token("CLASS", yyline)); }
 <YYINITIAL>while      	{return new Symbol(TokenIds.WHILE 
@@ -285,11 +285,11 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>instanceof	{return new Symbol(TokenIds.INSTANCEOF,
 							new Token("INSTANCEOF", yyline)); }
 
-// Identifiers
+
 <YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*	{return new Symbol(TokenIds.ID,
 							new Token("ID", yytext(), yyline)); }
 							
-// Integers														
+														
 <YYINITIAL> (\+|-)?[0-9]*	{	
 								try {
 									Integer.parseInt( yytext(); //verifying that the int fits
@@ -302,11 +302,11 @@ import java_cup.runtime.Symbol;
 								}
 							}
 
-//boolean
+
 <YYINITIAL>(true|false)		{return new Symbol(TokenIds.BOOLEAN_CONST,
 								new Token("BOOLEAN_CONST", yytext(), yyline)); }
 								
-//comments - ignoring, not returning any token
+
 <YYINITIAL>//.*					{ break; }
 <YYINITIAL>/\*					{ //enter block comment state
 									yybegin(YYBLOCKCOMMENT);
@@ -320,11 +320,11 @@ import java_cup.runtime.Symbol;
 									yybegin(YYINITIAL);
 								 	break; }
 
-// Strings
-<YYINITIAL>\"					{	string.setLength( 0 ); // clear out any previous string
+
+<YYINITIAL>"\""					{	string.setLength( 0 ); // clear out any previous string
 									yybegin(YYSTRING); }
 
-<YYSTRING>\"					{ 
+<YYSTRING>"\""					{ 
 									if( string.length()>MAX_STRING_SIZE ) {
 										return new Symbol(TokenIds.LEX_ERROR,
 											new Token("LEX_ERROR", "String may not exceed "+
@@ -341,13 +341,11 @@ import java_cup.runtime.Symbol;
 <YYSTRING>[^\\\n]					{ string.append( yytext() );
 										break; }
 
-<YYSLASH>[^nrtf\\\"]			{ return new Symbol(TokenIds.LEX_ERROR,
+<YYSLASH>[^nrtf\\"\""]			{ return new Symbol(TokenIds.LEX_ERROR,
 									new Token("LEX_ERROR", 
 										"Backslash may only be followed by r, n, t, f, \\, or \".", yyline));}
-<YYSLASH>[nrtf\\\"]				{ string.append( "\\" + yytext() );
-									yybegin(YYSTRING) }
-								
-																																
+<YYSLASH>[nrtf\\"\""]				{ string.append( "\\" + yytext() );
+									yybegin(YYSTRING); }
 
 .                      { throw new RuntimeException("Unmatched lexeme " +
                             yytext() + " at line " + yyline); }
