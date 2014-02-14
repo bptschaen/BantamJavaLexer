@@ -54,6 +54,9 @@ import java_cup.runtime.Symbol;
       * (used only when multipleFiles is true)
       */
     private int fileCnt = 0;
+    
+    //stores the string that will become the token
+    private StringBuffer string = new StringBuffer();
 
     /** Lexer constructor - defined in JLex specification file
       * Needed to handle lexing multiple files
@@ -286,7 +289,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*	{return new Symbol(TokenIds.ID,
 							new Token("ID", yytext(), yyline)); }
 							
-// Iintegers														
+// Integers														
 <YYINITIAL> (\+|-)?[0-9]*	{	
 								try {
 									Integer.parseInt( yytext(); //verifying that the int fits
@@ -294,7 +297,8 @@ import java_cup.runtime.Symbol;
 										new Token("INT_CONST", yytext(), yyline));
 								} catch( NumberFormatException nfe){ //integer parse fails
 									return new Symbol(TokenIds.LEX_ERROR,
-										new Token("LEX_ERROR", yytext(), yyline)); 
+										new Token("LEX_ERROR", "Invalid integer assignment: " + yytext(),
+										yyline)); 
 								}
 							}
 
@@ -317,28 +321,31 @@ import java_cup.runtime.Symbol;
 								 	break; }
 
 // Strings
-<YYINITIAL>\"					{ yybegin(YYSTRING) }
+<YYINITIAL>\"					{	string.setLength( 0 ); // clear out any previous string
+									yybegin(YYSTRING); }
 
 <YYSTRING>\"					{ 
-									if( yytext().length()>MAX_STRING_SIZE ) {
+									if( string.length()>MAX_STRING_SIZE ) {
 										return new Symbol(TokenIds.LEX_ERROR,
 											new Token("LEX_ERROR", "String may not exceed "+
 											MAX_STRING_SIZE+" characters.", yyline));
 									} else {
 										return new Symbol(TokenIds.STRING_CONST,
-											new Token("STRING_CONST", yytext(), yyline)); 
+											new Token("STRING_CONST", string, yyline)); 
 									}
 								}
 <YYSTRING>\\					{ yybegin(YYSTRINGSLASH) }
 <YYSTRING>[\n\r\f]				{ return new Symbol(TokenIds.LEX_ERROR,
 									new Token("LEX_ERROR", 
 										"Cannot have \\n, \\r, or \\f tokens", yyline));}
-<YYSTRING>[^\\\n]					{ break; }
+<YYSTRING>[^\\\n]					{ string.append( yytext() );
+										break; }
 
 <YYSLASH>[^nrtf\\\"]			{ return new Symbol(TokenIds.LEX_ERROR,
 									new Token("LEX_ERROR", 
 										"Backslash may only be followed by r, n, t, f, \\, or \".", yyline));}
-<YYSLASH>[nrtf\\\"]				{ yybegin(YYSTRING) }
+<YYSLASH>[nrtf\\\"]				{ string.append( "\\" + yytext() );
+									yybegin(YYSTRING) }
 								
 																																
 
