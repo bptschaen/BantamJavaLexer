@@ -44,22 +44,22 @@ import java_cup.runtime.Symbol;
     private boolean multipleFiles = false;
     /** array that holds the names of each file we're lexing 
       * (used only when multipleFiles is true)
-      * */
+      */
     private String[] filenames;
     /** array that holds the reader for each file we're lexing 
       * (used only when multipleFiles is true)
-      * */
+      */
     private java.io.BufferedReader[] fileReaders;
     /** current file number used to index filenames and fileReaders
       * (used only when multipleFiles is true)
-      * */
+      */
     private int fileCnt = 0;
 
     /** Lexer constructor - defined in JLex specification file
       * Needed to handle lexing multiple files
       * @param filenames list of filename strings
       * @param debug boolean indicating whether debugging is enabled
-      * */
+      */
     public Lexer(String[] filenames, boolean debug) {
 	// call private constructor, which does some initialization
 	this();
