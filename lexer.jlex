@@ -175,11 +175,11 @@ import java_cup.runtime.Symbol;
 	case YYBLOCKCOMMENT:
 		//return lexical error
 		return new Symbol(TokenIds.LEX_ERROR,
-							new Token("LEX_ERROR", "Reached EOF while parsing. Expected *//", yyline));
+							new Token("LEX_ERROR", "Reached EOF while parsing. Expected */", yyline));
 	case YYBLOCKSTAR:
 		//return lexical error
 		return new Symbol(TokenIds.LEX_ERROR,
-							new Token("LEX_ERROR", "Reached EOF while parsing. Expected *//", yyline));
+							new Token("LEX_ERROR", "Reached EOF while parsing. Expected */", yyline));
     // if defining other states then might want to add other cases here...
     }
 
