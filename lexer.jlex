@@ -1,28 +1,25 @@
 /* Bantam Java Compiler and Language Toolset.
-
-   Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
-                         David Furcy (furcyd@uwosh.edu) and
-                         E Christopher Lewis (lewis@vmware.com).
-   ALL RIGHTS RESERVED.
-
-   The Bantam Java toolset is distributed under the following 
-   conditions:
-
-     You may make copies of the toolset for your own use and 
-     modify those copies.
-
-     All copies of the toolset must retain the author names and 
-     copyright notice.
-
-     You may not sell the toolset or distribute it in 
-     conjunction with a commerical product or service without 
-     the expressed written consent of the authors.
-
-   THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS 
-   OR IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE 
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
-   PARTICULAR PURPOSE. 
-*/
+ * Copyright (C) 2009 by 	Marc Corliss (corliss@hws.edu) and 
+ * 							David Furcy (furcyd@uwosh.edu) and
+ * 							E Christopher Lewis (lewis@vmware.com).
+ * ALL RIGHTS RESERVED.
+ * 
+ * The Bantam Java toolset is distributed under the following 
+ * conditions:
+ * 
+ * You may make copies of the toolset for your own use and
+ * modify those copies.
+ * All copies of the toolset must retain the author names and 
+ * copyright notice.
+ * 
+ * You may not sell the toolset or distribute it in 
+ * conjunction with a commerical product or service without 
+ * the expressed written consent of the authors.
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS 
+ * OR IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
+ * PARTICULAR PURPOSE. 
+ */
 
 /* code below is copied to the file containing the lexer */
 
@@ -105,25 +102,25 @@ import java_cup.runtime.Symbol;
 
     /** holds the current string constant
       * note: we use StringBuffer so that appending does not require constructing a new object 
-      * */
+      */
     private StringBuffer currStringConst;
 
     /** getter method for accessing the current line number
       * @return current line number
-      * */
+      */
     public int getCurrLineNum() {
-	return yyline;
+		return yyline;
     }
 
     /** getter method for accessing the current file name
       * @return current filename string
-      * */
+      */
     public String getCurrFilename() {
-	return filenames[fileCnt];
+		return filenames[fileCnt];
     }
 
     /** print tokens - used primarily for debugging the lexer 
-      * */
+      */
     public void printTokens() throws java.io.IOException {
 	// prevFileCnt is used to determine when the filename has changed
 	// every time an EOF is encountered fileCnt is incremented
@@ -135,24 +132,23 @@ import java_cup.runtime.Symbol;
 	try {
 	    // iterate through all tokens
 	    while (true) {
-		// get the next token
-		Symbol symbol = next_token();
-		// check if file has changed
-		if (prevFileCnt != fileCnt) {
-		    // if it has then print out the new filename
-		    System.out.println("# " + filenames[fileCnt]);
-		    // update prevFileCnt
-		    prevFileCnt = fileCnt;
-		}
-		// print out the token
-		System.out.println((Token)symbol.value);
-		// if we've reached the EOF (EOF only returned for the last
-		// file) then we break out of loop
-		if (symbol.sym == TokenIds.EOF)
-		    break;
+			// get the next token
+			Symbol symbol = next_token();
+			// check if file has changed
+			if (prevFileCnt != fileCnt) {
+		    	// if it has then print out the new filename
+		    	System.out.println("# " + filenames[fileCnt]);
+		    	// update prevFileCnt
+		    	prevFileCnt = fileCnt;
+			}
+			// print out the token
+			System.out.println((Token)symbol.value);
+			// if we've reached the EOF (EOF only returned for the last
+			// file) then we break out of loop
+			if (symbol.sym == TokenIds.EOF)
+		    	break;
 	    }
-	}
-	catch (java.io.IOException e) {
+	} catch (java.io.IOException e) {
 	    // if an IOException occurs then print error and exit
 	    System.err.println("Unexpected IO exception while scanning.");
 	    throw e;
@@ -167,19 +163,23 @@ import java_cup.runtime.Symbol;
 
 %eofval{
     /* code below is executed when the end-of-file is reached */
-
+    
     switch(yy_lexical_state) {
     case YYINITIAL:
 		// if in YYINITIAL when EOF occurs then no error
 		break;
+	case YYBLOCKSTAR:
 	case YYBLOCKCOMMENT:
 		//return lexical error
 		return new Symbol(TokenIds.LEX_ERROR,
 							new Token("LEX_ERROR", "Reached EOF while parsing. Expected */", yyline));
-	case YYBLOCKSTAR:
+	case YYSTRINGSLASH:
+	case YYSTRING:
 		//return lexical error
 		return new Symbol(TokenIds.LEX_ERROR,
-							new Token("LEX_ERROR", "Reached EOF while parsing. Expected */", yyline));
+							new Token("LEX_ERROR", "Reached EOF while parsing. Expected closing \"", yyline));
+	default:
+		break;
     // if defining other states then might want to add other cases here...
     }
 
@@ -203,7 +203,7 @@ import java_cup.runtime.Symbol;
 %class Lexer
 %line
 %char
-%state YYBLOCKCOMMENT, YYBLOCKSTAR
+%state YYBLOCKCOMMENT, YYBLOCKSTAR, YYSTRING, YYSTRINGSLASH
 
 
 %%
@@ -237,7 +237,7 @@ import java_cup.runtime.Symbol;
 							new Token("%", yyline)); }
 <YYINITIAL>==			{return new Symbol(TokenIds.EQ,
 							new Token("==", yyline)); }
-<YYINITIAL>!=			{ return new Symbol(TokenIds.NE,
+<YYINITIAL>!=			{return new Symbol(TokenIds.NE,
 							new Token("!=", yyline)); }
 <YYINITIAL>>			{return new Symbol(TokenIds.GT,
 							new Token(">", yyline)); }
@@ -261,11 +261,11 @@ import java_cup.runtime.Symbol;
 							new Token("!", yyline)); }
 							
 //keywords												
-<YYINITIAL>class        { return new Symbol(TokenIds.CLASS, 
+<YYINITIAL>class        {return new Symbol(TokenIds.CLASS, 
 						    new Token("CLASS", yyline)); }
-<YYINITIAL>while      	{ return new Symbol(TokenIds.WHILE 
+<YYINITIAL>while      	{return new Symbol(TokenIds.WHILE 
 						    new Token("WHILE", yyline)); }
-<YYINITIAL>for       	{ return new Symbol(TokenIds.FOR 
+<YYINITIAL>for       	{return new Symbol(TokenIds.FOR 
 						    new Token("FOR", yyline)); }
 <YYINITIAL>if			{return new Symbol(TokenIds.IF,
 							new Token("IF", yyline)); }
@@ -281,14 +281,18 @@ import java_cup.runtime.Symbol;
 							new Token("EXTENDS", yyline)); }
 <YYINITIAL>instanceof	{return new Symbol(TokenIds.INSTANCEOF,
 							new Token("INSTANCEOF", yyline)); }
+
+// Identifiers
+<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*	{return new Symbol(TokenIds.ID,
+							new Token("ID", yytext(), yyline)); }
 							
-//integers														
-<YYINITIAL> (\+|-)?[0-9]*	{	try {
+// Iintegers														
+<YYINITIAL> (\+|-)?[0-9]*	{	
+								try {
 									Integer.parseInt( yytext(); //verifying that the int fits
 									return new Symbol(TokenIds.INT_CONST,
 										new Token("INT_CONST", yytext(), yyline));
-									}
-								catch( NumberFormatException nfe){ //integer parse fails
+								} catch( NumberFormatException nfe){ //integer parse fails
 									return new Symbol(TokenIds.LEX_ERROR,
 										new Token("LEX_ERROR", yytext(), yyline)); 
 								}
@@ -312,17 +316,29 @@ import java_cup.runtime.Symbol;
 									yybegin(YYINITIAL);
 								 	break; }
 
+// Strings
+<YYINITIAL>\"					{ yybegin(YYSTRING) }
 
-//-------------------------------------------------
-//strings NOTCOMPLETE!!!!
-<YYINITIAL>						{	if( yytext().length()>MAX_STRING_SIZE ){
-									return new Symbol(TokenIds.LEX_ERROR,
-										new Token("LEX_ERROR", yytext(), yyline)); 
+<YYSTRING>\"					{ 
+									if( yytext().length()>MAX_STRING_SIZE ) {
+										return new Symbol(TokenIds.LEX_ERROR,
+											new Token("LEX_ERROR", "String may not exceed "+
+											MAX_STRING_SIZE+" characters.", yyline));
+									} else {
+										return new Symbol(TokenIds.STRING_CONST,
+											new Token("STRING_CONST", yytext(), yyline)); 
+									}
 								}
-								return new Symbol(TokenIds.STRING_CONST,
-									new Token("STRING_CONST", yyline)); }
-						
+<YYSTRING>\\					{ yybegin(YYSTRINGSLASH) }
+<YYSTRING>[\n\r\f]				{ return new Symbol(TokenIds.LEX_ERROR,
+									new Token("LEX_ERROR", 
+										"Cannot have \\n, \\r, or \\f tokens", yyline));}
+<YYSTRING>[^\\\n]					{ break; }
 
+<YYSLASH>[^nrtf\\\"]			{ return new Symbol(TokenIds.LEX_ERROR,
+									new Token("LEX_ERROR", 
+										"Backslash may only be followed by r, n, t, f, \\, or \".", yyline));}
+<YYSLASH>[nrtf\\\"]				{ yybegin(YYSTRING) }
 								
 																																
 
