@@ -1,0 +1,19 @@
+
+class Test{
+	int a = 5;
+	/* do block
+		comments work *
+		/
+	*/
+	a++;
+	int b = -43;
+	b--;
+	int another_id;
+	boolean b = true || false && true;
+	method(){
+		testing a method;
+	}
+	myString = "Eclipse
+						IDE";
+					/*
+}
