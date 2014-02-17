@@ -1,17 +1,77 @@
-class Test{
-	int a = 5;
-	/* do block
-		comments work *
-		/
-	*/
-	a++;
-	int b = -43;
-	b--;
-	int another_id;
-	boolean b = true || false && true;
-	method(){
-		testing a method;
+class Test extends Object {
+	int[] a = {};
+	
+	int add(int a, int b) {
+		return (a+b);
 	}
-	myString = "Eclipse IDE";
+	
+	int subtract(int a, int b) {
+		return (a-b);
+	}
+	
+	int multiply(int a, int b) {
+		return (a*b);
+	}
+	
+	int divide(int a, int b) {
+		return (a/b);
+	}
+	
+	int modulus(int a, int b) {
+		return (a%b);
+	}
+	
+	int concerningEquals(int a, int b) {
+		boolean c = (a == b);
+		boolean d = (a != b);
+		boolean e = (a < b);
+		boolean f = (a > b);
+		boolean g = (a <= b);
+		boolean h = (a >= b);
+		a++;
+		b--;
+		int i = this.add(a,b);
+		boolean j = (c && d);
+		boolean k = (c || d);
+		if (!c) {
+			while(false) {
+				for (int l = 0; l < 2; l++) {
+					break;
+				}
+			}
+		} else {
+			if (true) {
+				// Do nothing
+			}
+		}
+		
+		int m = -34;
+		int n = 2;
+		int o = +23;
+		return (m+n+o);
+	}
+	
+	// Line comment
+	/*
+	 * This is a block comment! * * * / ?  
+	 ******/
+	void main(String[] args) {
+		Test t = new Test();
+		boolean tr = (t instanceof Object);
+		
+		String s1 = "abc";
+		String s2 = "abc\"abc";
+		
+		// To show that things like \e are not allowed in strings
+		// String s3 = "should be error here: \e";
+		
+		// To show that error happens when there is a new line char in string
+		//String s4 = "should be error here:
+		// ";
+		
+		// illegal identifiers
+		String 3s = "ab";
+		String _abc = "abc";
+	}
 	
 }
