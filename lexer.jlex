@@ -106,7 +106,8 @@ import java_cup.runtime.Symbol;
 	
 	
 	//verifies the string does not contain illegal escape characters
-	private boolean legalString = true;
+	private boolean noNewLines = true;
+	private boolean legalCharsAfterSlash = true;
 	
 	/** getter method for accessing the current line number
 	 * @return current line number
@@ -289,11 +290,6 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>instanceof				{ return new Symbol(TokenIds.INSTANCEOF,
 										new Token("INSTANCEOF", yyline)); }
 
-
-<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*	{ return new Symbol(TokenIds.ID,
-										new Token("ID", yytext(), yyline)); }
-							
-														
 <YYINITIAL>(\+|-)?[0-9]+			{	
 										try {
 											Integer.parseInt( yytext()); //verifying that the int fits
@@ -306,6 +302,20 @@ import java_cup.runtime.Symbol;
 										}
 									}
 
+<YYINITIAL>[a-zA-Z0-9_]*			{ 
+										char firstLetter = yytext().charAt(0);
+										int firstLetterAsInt = (int) firstLetter;
+										if (firstLetter == '_' || 
+												( (((int) '0') <= firstLetterAsInt) &&
+												(firstLetterAsInt <= ((int) '9')) ) ) {
+											return new Symbol(TokenIds.LEX_ERROR,
+												new Token("LEX_ERROR", 
+												"Illegial identifier: "+ yytext(), yyline));
+										} else {
+											return new Symbol(TokenIds.ID,
+												new Token("ID", yytext(), yyline));
+										}
+									}
 
 <YYINITIAL>(true|false)				{ return new Symbol(TokenIds.BOOLEAN_CONST,
 										new Token("BOOLEAN_CONST", yytext(), yyline)); }
@@ -327,9 +337,14 @@ import java_cup.runtime.Symbol;
 										break;
 									}
 									
-<YYBLOCKSTAR>[^/]					{ 
+<YYBLOCKSTAR>[^/\*]					{ 
 										//move to block comment
 										yybegin(YYBLOCKCOMMENT);
+								 		break; 
+								 	}
+								 	
+<YYBLOCKSTAR>\*						{ 
+										//stay in current state
 								 		break; 
 								 	}
 								 	
@@ -344,18 +359,24 @@ import java_cup.runtime.Symbol;
 										// Clear out any previous string.
 										currStringConst.setLength(0);
 										//resets legal string boolean
-										legalString = true; 
+										noNewLines = true; 
+										legalCharsAfterSlash = true;
 										yybegin(YYSTRING); 
+										break;
 									}
 
-<YYSTRING>\"						{ 	yybegin(YYINITIAL);
-										if (!legalString){
+<YYSTRING>\"						{ 	
+										yybegin(YYINITIAL);
+										if (!noNewLines){
 											return new Symbol(TokenIds.LEX_ERROR,
 												new Token("LEX_ERROR", 
 												"Cannot have \\n, \\r, or \\f tokens in \"" +
 												 currStringConst.toString() + "\"", yyline));
-										}
-										else if( currStringConst.toString().length() > MAX_STRING_SIZE ) {
+										} else if (!legalCharsAfterSlash) {
+											return new Symbol(TokenIds.LEX_ERROR,
+												new Token("LEX_ERROR", 
+												"Backslash may only be followed by r, n, t, f, \\, or \".", yyline));
+										} else if( currStringConst.toString().length() > MAX_STRING_SIZE ) {
 											return new Symbol(TokenIds.LEX_ERROR,
 												new Token("LEX_ERROR", "String may not exceed "+
 												MAX_STRING_SIZE+" characters.", yyline));
@@ -366,24 +387,33 @@ import java_cup.runtime.Symbol;
 									}
 									
 <YYSTRING>\\						{ 
+										currStringConst.append(yytext());
 										yybegin(YYSTRINGSLASH); 
 										break;
 									}
 
-<YYSTRING>[\n\r\f]					{ 	legalString = false; //encountered illegal escape character
-										break; }
+<YYSTRING>[\n\r\f]					{ 	
+										noNewLines = false; //encountered illegal character
+										break; 
+									}
 											
-<YYSTRING>[^\\\n]					{ 
+<YYSTRING>[^\\\n\r\f\"]				{ 
 										currStringConst.append( yytext() );
 										break; 
 									}
 
-<YYSTRINGSLASH>[^nrtf\\\"]			{ return new Symbol(TokenIds.LEX_ERROR,
-										new Token("LEX_ERROR", 
-											"Backslash may only be followed by r, n, t, f, \\, or \".", yyline));}
-										
-<YYSTRINGSLASH>[nrtf\\\"]			{ currStringConst.append( "\\" + yytext() );
-										yybegin(YYSTRING); }
+<YYSTRINGSLASH>[^nrtf\\\"]			{ 
+										legalCharsAfterSlash = false;
+										currStringConst.append( "\\" + yytext() );
+										yybegin(YYSTRING); 
+										break;
+									}
+									
+<YYSTRINGSLASH>[nrtf\\\"]			{ 
+										currStringConst.append(yytext());
+										yybegin(YYSTRING); 
+										break;
+									}
 
 .                      				{ throw new RuntimeException("Unmatched lexeme " +
 										yytext() + " at line " + yyline); }
