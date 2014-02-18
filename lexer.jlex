@@ -289,6 +289,8 @@ import java_cup.runtime.Symbol;
 										new Token("EXTENDS", yyline)); }
 <YYINITIAL>instanceof				{ return new Symbol(TokenIds.INSTANCEOF,
 										new Token("INSTANCEOF", yyline)); }
+<YYINITIAL>(true|false)				{ return new Symbol(TokenIds.BOOLEAN_CONST,
+										new Token("BOOLEAN_CONST", yytext(), yyline)); }
 
 <YYINITIAL>(\+|-)?[0-9]+			{	
 										try {
@@ -302,6 +304,7 @@ import java_cup.runtime.Symbol;
 										}
 									}
 
+
 <YYINITIAL>[a-zA-Z0-9_]*			{ 
 										char firstLetter = yytext().charAt(0);
 										int firstLetterAsInt = (int) firstLetter;
@@ -310,16 +313,12 @@ import java_cup.runtime.Symbol;
 												(firstLetterAsInt <= ((int) '9')) ) ) {
 											return new Symbol(TokenIds.LEX_ERROR,
 												new Token("LEX_ERROR", 
-												"Illegial identifier: "+ yytext(), yyline));
+												"Illegal identifier: "+ yytext(), yyline));
 										} else {
 											return new Symbol(TokenIds.ID,
 												new Token("ID", yytext(), yyline));
 										}
 									}
-
-<YYINITIAL>(true|false)				{ return new Symbol(TokenIds.BOOLEAN_CONST,
-										new Token("BOOLEAN_CONST", yytext(), yyline)); }
-								
 
 <YYINITIAL>//.*						{ break; }
 
