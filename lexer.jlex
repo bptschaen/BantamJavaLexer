@@ -19,6 +19,11 @@
  * OR IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE 
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
  * PARTICULAR PURPOSE. 
+ 
+ 
+ Modified by Stephen Morse, Anders Peterson, Brendan Tschaen
+ CS 461: Project 1
+ Due: February 17, 2014
  */
 
 /* code below is copied to the file containing the lexer */
@@ -299,7 +304,8 @@ import java_cup.runtime.Symbol;
 												new Token("INT_CONST", yytext(), yyline));
 										} catch( NumberFormatException nfe){ //integer parse fails
 											return new Symbol(TokenIds.LEX_ERROR,
-												new Token("LEX_ERROR", "Invalid integer assignment: " + yytext(),
+												new Token("LEX_ERROR", "Invalid integer assignment: " + yytext()
+													+ ". Ensure the values entered are between -2,147,483,648 and 2,147,483,647.",
 												yyline)); 
 										}
 									}
@@ -412,6 +418,10 @@ import java_cup.runtime.Symbol;
 										currStringConst.append(yytext());
 										yybegin(YYSTRING); 
 										break;
+									}
+<YYINITIAL>[^ -\"%-9;->A-\]_a-\}]	{	return new Symbol(TokenIds.LEX_ERROR,
+												new Token("LEX_ERROR", 
+												"Illegal character " + yytext(), yyline));
 									}
 
 .                      				{ throw new RuntimeException("Unmatched lexeme " +
